@@ -3,21 +3,28 @@ using System.Text.Json;
 // the Aspire hosting package automatically adds this namespace.
 namespace Aspire.Hosting;
 
+/// <summary>
+/// Extension methods for adding and configuring an <see cref="NgrokResource"/> in an
+/// <see cref="IDistributedApplicationBuilder"/>. These are placed in the <c>Aspire.Hosting</c>
+/// namespace for discoverability when referencing the Aspire hosting packages.
+/// </summary>
 public static class NgrokResourceBuilderExtensions
 {
     private const string NGROK_AUTHTOKEN = nameof(NGROK_AUTHTOKEN);
 
     /// <summary>
-    /// Adds the <see cref="NgrokResource"/> to the given
-    /// <paramref name="builder"/> instance. Uses the configured ngrok image tag.
+    /// Adds an <see cref="NgrokResource"/> to the provided <paramref name="builder"/> and
+    /// configures the container image, inspection endpoint and environment variables.
+    /// The returned <see cref="IResourceBuilder{NgrokResource}"/> can be used to further
+    /// configure the resource (for example, to set commands or additional endpoints).
     /// </summary>
-    /// <param name="builder">The <see cref="IDistributedApplicationBuilder"/>.</param>
-    /// <param name="name">The name of the resource.</param>
-    /// <param name="httpPort">Optional host port to bind the ngrok local API to.</param>
-    /// <returns>
-    /// An <see cref="IResourceBuilder{NgrokResource}"/> instance that
-    /// represents the added Ngrok resource.
-    /// </returns>
+    /// <param name="builder">The application distributed builder.</param>
+    /// <param name="name">A unique name for the resource within the builder.</param>
+    /// <param name="port">Host port to bind the ngrok inspection API to (default: 4041).</param>
+    /// <param name="targetPort">Container port that ngrok will expose (default: 4040).</param>
+    /// <param name="authToken">A parameter resource that provides the ngrok auth token.</param>
+    /// <param name="logger">Optional logger delegate used while waiting for the public URL.</param>
+    /// <returns>An <see cref="IResourceBuilder{NgrokResource}"/> for further configuration.</returns>
     public static IResourceBuilder<NgrokResource> AddNgrok(
         this IDistributedApplicationBuilder builder,
         string name,
@@ -47,6 +54,8 @@ public static class NgrokResourceBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         Action<string> log = logger ?? (m => Console.WriteLine(m));
 
+        // Register a host-side readiness hook that polls the ngrok inspection API and
+        // completes the resource's public URL Task when a tunnel with a public_url is found.
         builder.OnResourceReady(async (r, e, c) =>
         {
             try
@@ -150,6 +159,17 @@ public static class NgrokResourceBuilderExtensions
         return builder;
     }
 
+    // (WithDefaultCommand documented version appears further below.)
+
+    /// <summary>
+    /// Configure the resource to use the default ngrok command that forwards HTTP from the
+    /// specified <paramref name="host"/> and <paramref name="port"/> into the container.
+    /// This is a convenience method that sets the common command-line arguments for http tunnels.
+    /// </summary>
+    /// <param name="builder">The resource builder.</param>
+    /// <param name="host">The host to forward to (for example <c>host.docker.internal</c>).</param>
+    /// <param name="port">The port on the host to forward (default: 80).</param>
+    /// <returns>The builder for chaining.</returns>
     public static IResourceBuilder<NgrokResource> WithDefaultCommand(this IResourceBuilder<NgrokResource> builder, string host, int port = 80)
     {
         ArgumentNullException.ThrowIfNull(builder);
