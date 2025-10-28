@@ -1,6 +1,5 @@
 {
   "name": "thingstead-aspire-hosting-ngrok",
-  "version": "0.1.0",
   "private": true,
   "devDependencies": {
     "semantic-release": "^24.1.0",

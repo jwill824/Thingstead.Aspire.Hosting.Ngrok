@@ -6,12 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <!-- Package metadata for NuGet and GitHub Packages -->
   <PropertyGroup>
-    <!-- Use a stable package id; change if you prefer a different name -->
     <PackageId>Thingstead.Aspire.Hosting.Ngrok</PackageId>
-    <!-- Default version; CI will override when publishing from a tag -->
-    <Version>1.0.0</Version>
     <Authors>Jeff Williams</Authors>
     <Company>Thingstead</Company>
     <Product>Thingstead.Aspire.Hosting.Ngrok</Product>
@@ -20,15 +16,11 @@
     <RepositoryUrl>https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <!-- Produce a package when building in CI or locally if desired -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <!-- Ensure MSBuild knows this project is packable -->
     <IsPackable>true</IsPackable>
-    <!-- Default package output folder for local packing -->
     <PackageOutputPath>$(MSBuildProjectDirectory)/artifacts</PackageOutputPath>
     <IncludeSymbols>false</IncludeSymbols>
     <IncludeSource>false</IncludeSource>
-    <!-- Generate XML documentation file so consumers get IntelliSense docs -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
