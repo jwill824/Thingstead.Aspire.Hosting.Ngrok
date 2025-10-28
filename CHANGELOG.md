@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.0.1...v1.0.2) (2025-10-28)
+
+
+### Bug Fixes
+
+* cleaning up unneeded config values ([613d960](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/613d960f1bc187bf2c648903c0f5904deeea6eb7))
+
 ## [1.0.1](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.0.0...v1.0.1) (2025-10-28)
 
 
