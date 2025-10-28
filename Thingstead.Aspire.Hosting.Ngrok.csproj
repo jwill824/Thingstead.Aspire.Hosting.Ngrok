@@ -30,17 +30,11 @@
     <IncludeSource>false</IncludeSource>
     <!-- Generate XML documentation file so consumers get IntelliSense docs -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- README file to include in the nupkg and show on the package page -->
-    <PackageReadmeFile>NuGet.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting" Version="9.5.2" />
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="NuGet.md" Pack="true" PackagePath="\" /> 
   </ItemGroup>
 
 </Project>

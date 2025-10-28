@@ -6,6 +6,56 @@ Helpers to integrate ngrok with Aspire hosting.
 
 This project produces a NuGet package and publishes it to GitHub Packages via GitHub Actions. The workflow automatically applies semantic versioning and creates GitHub Releases with release notes.
 
+## Usage
+
+The following snippet shows a typical usage pattern. Add a parameter to hold the ngrok auth token,
+add an `Ngrok` resource, configure the default forwarding command, and wait for the public URL.
+
+```csharp
+var ngrokAuthParam = builder.AddParameter("NgrokAuthToken", secret: true);
+var ngrok = builder.AddNgrok("ngrok", authToken: ngrokAuthParam, logger: AppHostLogger.Info)
+    .WithDefaultCommand("host.docker.internal", int.Parse(YARP_PORT))
+    .OnResourceReady(async (r, e, c) =>
+    {
+        AppHostLogger.Info("Waiting for ngrok to publish public URL...");
+
+        try
+        {
+            var url = await r.PublicUrlTask;
+            if (url is null)
+            {
+                AppHostLogger.Error("Ngrok did not publish a public URL within the timeout");
+                return;
+            }
+
+            AppHostLogger.Info("Ngrok public URL: " + url);
+
+            try
+            {
+                await QrUtil.GenerateAsync($"exp://{url.Host}", qrCodeFile);
+                AppHostLogger.Info($"Generated QR for exp://{url.Host} at {qrCodeFile}");
+            }
+            catch (Exception ex)
+            {
+                AppHostLogger.Error($"Failed to generate QR: {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            AppHostLogger.Error($"Error waiting for ngrok public URL: {ex.Message}");
+        }
+    });
+```
+
+> [!NOTE]
+> The resource will set the configured ngrok auth token into the container environment. Provide the token via a secret `ParameterResource` created with `AddParameter(..., secret: true)`.
+
+> [!NOTE]
+> The `PublicUrlTask` completes when the host-side probing logic discovers a tunnel public URL via the ngrok inspection API.
+
+> [!NOTE]
+> Consider pinning the container image tag in your consuming project for reproducible runs.
+
 ## Consuming the package and managing a local PAT (1Password)
 
 This repository provides `NuGet.config.template` with the GitHub Packages feed URL and `packageSourceMapping` for `Thingstead.Aspire.Hosting.Ngrok`. Do NOT commit a `NuGet.config` that contains credentials.
@@ -70,6 +120,9 @@ When a version is determined the workflow will:
 
 If you prefer a manual release instead, you can create and push a tag (for example `v1.2.0`) and the workflow will use that tag's version.
 
+> [!WARNING]
+> Never commit `NuGet.config` containing `ClearTextPassword` to source control. Keep credentials in your password manager or Keychain and use the template in this repo.
+
 ### How to influence version bumps
 
 Use Conventional Commit style messages to influence the bump type:
@@ -100,9 +153,3 @@ You can test the release pipeline without creating tags or publishing by using t
 - [semantic-release (npm)](https://www.npmjs.com/package/semantic-release)
 - [semantic-release docs](https://semantic-release.gitbook.io/)
 - [Conventional Commits](https://www.conventionalcommits.org/)
-
-## Notes
-
-- Never commit `NuGet.config` containing `ClearTextPassword` to source control. Keep credentials in your password manager or Keychain and use the template in this repo.
-- Prefer a PAT with least privileges and rotate tokens periodically.
-- For CI, use repository secrets (Actions secrets) named e.g. `NUGET_API_KEY`; do not embed tokens in workflows or files.
