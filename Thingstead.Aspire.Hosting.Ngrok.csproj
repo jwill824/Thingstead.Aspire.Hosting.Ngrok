@@ -31,7 +31,7 @@
     <!-- Generate XML documentation file so consumers get IntelliSense docs -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- README file to include in the nupkg and show on the package page -->
-    <PackageReadmeFile>NUGET_README.md</PackageReadmeFile>
+    <PackageReadmeFile>NuGet.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,10 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="NUGET_README.md">
-      <Pack>true</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="NuGet.md" Pack="true" PackagePath="\" /> 
   </ItemGroup>
 
 </Project>
