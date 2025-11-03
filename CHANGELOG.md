@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.1.0...v1.1.1) (2025-11-03)
+
+
+### Bug Fixes
+
+* cannot access null url ([91d3b77](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/91d3b77bc0e912a859b5a1a50a157c7ebf3b26c4))
+
 # [1.1.0](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.0.2...v1.1.0) (2025-11-03)
 
 
