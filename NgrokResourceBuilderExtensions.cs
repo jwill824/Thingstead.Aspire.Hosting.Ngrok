@@ -156,7 +156,7 @@ public static class NgrokResourceBuilderExtensions
             catch { /* swallow errors - resource shouldn't crash host for this */ }
         });
 
-        return builder;
+        return builder.WithUrl(builder.Resource.GeneratedPublicUrl.AbsoluteUri.TrimEnd('/'));
     }
 
     // (WithDefaultCommand documented version appears further below.)
