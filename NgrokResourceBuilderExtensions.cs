@@ -133,23 +133,6 @@ public static class NgrokResourceBuilderExtensions
                                                     {
                                                         log($"[ngrok] failed to complete public url: {ex.Message}");
                                                     }
-
-                                                    try
-                                                    {
-                                                        // Also set the builder's URL immediately so the host can use it without
-                                                        // needing to dereference GeneratedPublicUrl (which may still be null in some contexts).
-                                                        // Use the parsed string value to avoid accessing r.GeneratedPublicUrl here.
-                                                        builder.WithUrl(url);
-                                                    }
-                                                    catch (Exception bx)
-                                                    {
-                                                        log($"[ngrok] builder.WithUrl failed: {bx.Message}");
-                                                    }
-
-                                                    if (url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        break;
-                                                    }
                                                 }
                                             }
                                         }
