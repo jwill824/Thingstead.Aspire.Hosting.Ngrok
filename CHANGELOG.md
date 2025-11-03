@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.1.1...v1.1.2) (2025-11-03)
+
+
+### Bug Fixes
+
+* removing adding url ([fa8d256](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/fa8d2563f624f48588367b39550c247fba6824c2))
+
 ## [1.1.1](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.1.0...v1.1.1) (2025-11-03)
 
 
