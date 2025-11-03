@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.0.2...v1.1.0) (2025-11-03)
+
+
+### Bug Fixes
+
+* oops put wrong project in releaserc ([1ca03c6](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/1ca03c67413291991876fbf6393e6a3b6f8c2131))
+
+
+### Features
+
+* adding url; updating releaserc ([84f111d](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/84f111d384d23b0413bff409b407366786e2e3e2))
+
 ## [1.0.2](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.0.1...v1.0.2) (2025-10-28)
 
 
