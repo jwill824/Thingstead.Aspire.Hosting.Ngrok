@@ -124,12 +124,32 @@ public static class NgrokResourceBuilderExtensions
                                                 if (!string.IsNullOrEmpty(url))
                                                 {
                                                     log($"[ngrok] found tunnel public_url={url}");
+                                                    try
+                                                    {
+                                                        // Complete the resource's GeneratedPublicUrl so callers waiting on it are notified
+                                                        r.CompletePublicUrl(new Uri(url));
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        log($"[ngrok] failed to complete public url: {ex.Message}");
+                                                    }
+
+                                                    try
+                                                    {
+                                                        // Also set the builder's URL immediately so the host can use it without
+                                                        // needing to dereference GeneratedPublicUrl (which may still be null in some contexts).
+                                                        // Use the parsed string value to avoid accessing r.GeneratedPublicUrl here.
+                                                        builder.WithUrl(url);
+                                                    }
+                                                    catch (Exception bx)
+                                                    {
+                                                        log($"[ngrok] builder.WithUrl failed: {bx.Message}");
+                                                    }
+
                                                     if (url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                                                     {
-                                                        r.CompletePublicUrl(new Uri(url));
                                                         break;
                                                     }
-                                                    r.CompletePublicUrl(new Uri(url));
                                                 }
                                             }
                                         }
@@ -149,14 +169,14 @@ public static class NgrokResourceBuilderExtensions
                     catch (OperationCanceledException) { break; }
                     catch (Exception ex) { log($"[ngrok] inspection query error: {ex.Message}"); }
 
-                    if (!string.IsNullOrEmpty(r.GeneratedPublicUrl.Host)) break;
+                    if (!string.IsNullOrEmpty(r.GeneratedPublicUrl?.Host)) break;
                     await Task.Delay(1000, c);
                 }
             }
             catch { /* swallow errors - resource shouldn't crash host for this */ }
         });
 
-        return builder.WithUrl(builder.Resource.GeneratedPublicUrl.AbsoluteUri.TrimEnd('/'));
+        return builder;
     }
 
     // (WithDefaultCommand documented version appears further below.)
