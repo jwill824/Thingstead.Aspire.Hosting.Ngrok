@@ -47,4 +47,10 @@ public sealed class NgrokResource(string name, ParameterResource authToken) : Co
     /// <see cref="CompletePublicUrl"/> is invoked.
     /// </summary>
     public Uri GeneratedPublicUrl { get; set; } = null!;
+
+    /// <summary>
+    /// Task that yields the public URL as a string (trimmed), or null when not available.
+    /// This maps the existing <see cref="PublicUrlTask"/> and is the canonical public-url API.
+    /// </summary>
+    public Task<string?> PublicUrlTaskString => PublicUrlTask.ContinueWith(t => t.Result?.AbsoluteUri?.TrimEnd('/'), TaskScheduler.Default);
 }

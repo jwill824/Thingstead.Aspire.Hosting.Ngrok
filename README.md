@@ -13,16 +13,24 @@ add an `Ngrok` resource, configure the default forwarding command, and wait for 
 
 ```csharp
 var ngrokAuthParam = builder.AddParameter("NgrokAuthToken", secret: true);
-var ngrok = builder.AddNgrok("ngrok", authToken: ngrokAuthParam, logger: AppHostLogger.Info)
-    .WithDefaultCommand("host.docker.internal", int.Parse(YARP_PORT))
+// Create options from IConfiguration/environment by binding to the NgrokOptions POCO
+var ngrokOptions = builder.Configuration.GetSection("Ngrok").Get<NgrokOptions>();
+var ngrok = builder.AddNgrok("ngrok", ngrokOptions, configureEnvironment: env =>
+    {
+        // set any environment variables the ngrok container expects from the apphost
+        env["NGROK_INTERNAL_URL"] = "host.docker.internal";
+        env["YARP_PORT"] = YARP_PORT;
+        env["EXPO_PORT"] = EXPO_PORT;
+    }, authToken: ngrokAuthParam, logger: AppHostLogger.Info);
     .OnResourceReady(async (r, e, c) =>
     {
         AppHostLogger.Info("Waiting for ngrok to publish public URL...");
 
         try
         {
-            var url = await r.PublicUrlTask;
-            if (url is null)
+
+            var url = await r.PublicUrlTaskString;
+            if (string.IsNullOrEmpty(url))
             {
                 AppHostLogger.Error("Ngrok did not publish a public URL within the timeout");
                 return;
@@ -32,8 +40,10 @@ var ngrok = builder.AddNgrok("ngrok", authToken: ngrokAuthParam, logger: AppHost
 
             try
             {
-                await QrUtil.GenerateAsync($"exp://{url.Host}", qrCodeFile);
-                AppHostLogger.Info($"Generated QR for exp://{url.Host} at {qrCodeFile}");
+                // url is the absolute URI string (trimmed), we can extract host if needed
+                var host = new Uri(url).Host;
+                await QrUtil.GenerateAsync($"exp://{host}", qrCodeFile);
+                AppHostLogger.Info($"Generated QR for exp://{host} at {qrCodeFile}");
             }
             catch (Exception ex)
             {
