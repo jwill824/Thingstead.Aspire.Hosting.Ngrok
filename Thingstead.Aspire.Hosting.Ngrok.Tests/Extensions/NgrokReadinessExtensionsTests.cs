@@ -1,15 +1,12 @@
 using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
-namespace Thingstead.Aspire.Hosting.Ngrok.Tests;
+namespace Thingstead.Aspire.Hosting.Ngrok.Tests.Extensions;
 
 public class NgrokReadinessExtensionsTests
 {
@@ -80,7 +77,8 @@ public class NgrokReadinessExtensionsTests
 
         await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
-        Assert.Equal(new Uri("https://probe.ngrok.io"), resource.GeneratedPublicUrl);
+        var u = await resource.Uri;
+        Assert.Equal(new Uri("https://probe.ngrok.io"), u);
     }
 
     [Fact]
@@ -104,7 +102,7 @@ public class NgrokReadinessExtensionsTests
 
         await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
-        Assert.Null(resource.GeneratedPublicUrl);
+        Assert.False(resource.Uri.IsCompleted);
     }
 
     [Fact]
@@ -135,11 +133,12 @@ public class NgrokReadinessExtensionsTests
             return Task.FromResult(resp);
         }
 
-        var client = new TestInspectionApiClient((u, ct) => Handler(u, ct));
+        var client = new TestInspectionApiClient(Handler);
 
         await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
-        Assert.Equal(new Uri("https://second.ngrok.io"), resource.GeneratedPublicUrl);
+        var u3 = await resource.Uri;
+        Assert.Equal(new Uri("https://second.ngrok.io"), u3);
     }
 
     [Fact]
@@ -150,7 +149,7 @@ public class NgrokReadinessExtensionsTests
 
         var candidates = new List<Uri> { new("http://localhost:4041/api/tunnels") };
 
-        HttpResponseMessage ResponseFactory(Uri u, CancellationToken ct)
+        static HttpResponseMessage ResponseFactory(Uri u, CancellationToken ct)
         {
             var resp = new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -163,11 +162,11 @@ public class NgrokReadinessExtensionsTests
 
         await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
-        Assert.Null(resource.GeneratedPublicUrl);
+        Assert.False(resource.Uri.IsCompleted);
     }
 }
 
-internal sealed class TestInspectionApiClient(Func<Uri, CancellationToken, Task<HttpResponseMessage>> handler) : IInspectionApiClient
+internal sealed class TestInspectionApiClient(Func<Uri, CancellationToken, Task<HttpResponseMessage>> handler) : IHttpClientWrapper
 {
     private readonly Func<Uri, CancellationToken, Task<HttpResponseMessage>> _handler = handler;
 

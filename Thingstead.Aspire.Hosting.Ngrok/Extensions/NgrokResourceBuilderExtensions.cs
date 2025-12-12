@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 // Put extensions in the Aspire.Hosting namespace to ease discovery as referencing
 // the Aspire hosting package automatically adds this namespace.
@@ -62,11 +61,11 @@ public static class NgrokResourceBuilderExtensions
                 var scheme = string.Equals(options.Mode, "tls", StringComparison.OrdinalIgnoreCase) ? "https" : "http";
                 var publicUrl = new Uri($"{scheme}://{options.Hostname}");
                 resource.CompletePublicUrl(publicUrl);
-                logger.Info("populated GeneratedPublicUrl from reserved hostname: {Url}", publicUrl);
+                logger.Info("populated public Uri from reserved hostname: {Url}", publicUrl);
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "failed to populate GeneratedPublicUrl from configured hostname");
+                logger.Error(ex, "failed to populate public Uri from configured hostname");
             }
         }
 

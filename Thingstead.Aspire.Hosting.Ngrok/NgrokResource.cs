@@ -6,8 +6,8 @@ namespace Aspire.Hosting.ApplicationModel;
 
 /// <summary>
 /// Represents an ngrok container resource managed by the Aspire hosting test harness.
-/// The resource exposes an auth-token parameter and provides a <see cref="PublicUrlTask"/>
-/// that completes when ngrok has published a public URL for the tunneled endpoint.
+/// The resource exposes an auth-token parameter and provides a <see cref="Uri"/>
+/// task that completes when ngrok has published a public URL for the tunneled endpoint.
 /// </summary>
 public sealed class NgrokResource(string name, ParameterResource authToken) : ContainerResource(name)
 {
@@ -21,13 +21,6 @@ public sealed class NgrokResource(string name, ParameterResource authToken) : Co
     private readonly TaskCompletionSource<Uri?> _publicUrlTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     /// <summary>
-    /// Task that completes when the ngrok public url is known. The returned <see cref="Task{Uri}"/>
-    /// will complete with the discovered public URL or <c>null</c> if no URL was found within the
-    /// host-side timeout.
-    /// </summary>
-    public Task<Uri?> PublicUrlTask => _publicUrlTcs.Task;
-
-    /// <summary>
     /// Internal API: signal that the ngrok resource has discovered a public URL. This is invoked by the
     /// host-side probing logic and should not be called by consumers.
     /// </summary>
@@ -36,21 +29,14 @@ public sealed class NgrokResource(string name, ParameterResource authToken) : Co
     {
         try
         {
-            GeneratedPublicUrl = url;
             _publicUrlTcs.TrySetResult(url);
         }
         catch { /* best-effort */ }
     }
 
     /// <summary>
-    /// The last public URL discovered for this resource. The value is initialized when
-    /// <see cref="CompletePublicUrl"/> is invoked.
+    /// Task that yields the discovered public Uri (or null when not available yet).
+    /// Consumers can await this task to get the published Uri once it's discovered.
     /// </summary>
-    public Uri GeneratedPublicUrl { get; set; } = null!;
-
-    /// <summary>
-    /// Task that yields the public URL as a string (trimmed), or null when not available.
-    /// This maps the existing <see cref="PublicUrlTask"/> and is the canonical public-url API.
-    /// </summary>
-    public Task<string?> PublicUrlTaskString => PublicUrlTask.ContinueWith(t => t.Result?.AbsoluteUri?.TrimEnd('/'), TaskScheduler.Default);
+    public Task<Uri?> Uri => _publicUrlTcs.Task;
 }
