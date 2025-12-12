@@ -20,7 +20,7 @@ internal sealed class NgrokArgumentBuilder
             case ("hobbyist", "http"):
                 logger.Info("binding reserved hostname for hobbyist/http mode: {Hostname}", opts.Hostname);
                 args.Add("http");
-                args.Add($"http://{opts.TargetHostname}:{opts.TargetPort}");
+                args.Add($"http://{opts.TargetHostname}:{opts.TargetHostnamePort}");
                 args.Add($"--hostname={opts.Hostname}");
                 args.Add("--log=stdout");
                 args.Add("--log-level=debug");
@@ -29,7 +29,7 @@ internal sealed class NgrokArgumentBuilder
             default:
                 logger.Warn("unknown mode '{Mode}', falling back to http", opts.Mode);
                 args.Add("http");
-                args.Add($"http://{opts.TargetHostname}:{opts.TargetPort}");
+                args.Add($"http://{opts.TargetHostname}:{opts.TargetHostnamePort}");
                 args.Add("--log=stdout");
                 break;
         }
