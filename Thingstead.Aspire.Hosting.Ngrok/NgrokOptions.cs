@@ -62,17 +62,22 @@ public class NgrokOptions
     }
 
     /// <summary>
-    /// Optional host port the ngrok inspection API is exposed on.
+    /// Host port the ngrok inspection API is exposed on.
     /// </summary>
-    public int Port { get; set; }
+    public int Port { get; set; } = 4041;
 
     /// <summary>
-    /// Optional container target port exposed by ngrok.
+    /// Container target port exposed by ngrok.
     /// </summary>
-    public int TargetPort { get; set; }
+    public int TargetPort { get; set; } = 4040;
 
     /// <summary>
-    /// Optional container target hostname exposed by ngrok.
+    /// Container target hostname exposed by ngrok.
     /// </summary>
     public string TargetHostname { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Container target hostname port exposed by ngrok.
+    /// </summary>
+    public int TargetHostnamePort {get; set;} = 8081;
 }

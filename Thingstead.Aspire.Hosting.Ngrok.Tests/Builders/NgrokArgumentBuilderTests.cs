@@ -15,7 +15,7 @@ public class NgrokArgumentBuilderTests
     [Fact]
     public void BuildArgs_http_without_hostname_returns_http_targeting_yarp()
     {
-        var ngrokOpts = new NgrokOptions { Plan = "free", TargetHostname = "host.docker.internal", TargetPort = 8080 };
+        var ngrokOpts = new NgrokOptions { Plan = "free", TargetHostname = "host.docker.internal", TargetHostnamePort = 8080 };
         var args = NgrokArgumentBuilder.BuildArgs(ngrokOpts, NullLogger.Instance);
         Assert.Contains("http", args);
         Assert.Contains(args, a => a.Contains("host.docker.internal") && a.Contains("8080"));
