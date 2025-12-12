@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v2.0.0...v2.0.1) (2025-12-12)
+
+
+### Bug Fixes
+
+* adding target hostname port which is different from target port ([5e2ff26](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/5e2ff26bbc59279784654d41ae66d357e4f174cb))
+
 # [2.0.0](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.1.2...v2.0.0) (2025-12-12)
 
 
