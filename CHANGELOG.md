@@ -1,3 +1,21 @@
+# [2.0.0](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.1.2...v2.0.0) (2025-12-12)
+
+
+### Bug Fixes
+
+* fixing releaserc.json ([fbfba8c](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/fbfba8c89f2a56b41982b3c7ea01a8cd15ae2411))
+
+
+### Features
+
+* major refactor ([88a1b0e](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/88a1b0e8d7c727bdcee037d3ca6d21a4c49db4c8))
+
+
+### BREAKING CHANGES
+
+* since last release failed doing this again; the extension usage has changed completely
+* extension structure has changed
+
 ## [1.1.2](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v1.1.1...v1.1.2) (2025-11-03)
 
 
