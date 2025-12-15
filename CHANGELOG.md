@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v2.0.1...v2.0.2) (2025-12-15)
+
+
+### Bug Fixes
+
+* adding logic to extract protocol from domain ([55d53ef](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/55d53ef09966b4d0cc923c5fa2dfa9c931cdb25d))
+
 ## [2.0.1](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v2.0.0...v2.0.1) (2025-12-12)
 
 
