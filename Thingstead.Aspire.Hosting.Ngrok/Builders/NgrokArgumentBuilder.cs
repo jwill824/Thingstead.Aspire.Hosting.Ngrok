@@ -1,15 +1,12 @@
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("Thingstead.Aspire.Hosting.Ngrok.Tests")]
 namespace Aspire.Hosting;
 
 internal sealed class NgrokArgumentBuilder
 {
-    public static string[] BuildArgs(NgrokOptions opts, ILogger? logger)
+    public static string[] BuildArgs(NgrokOptions opts)
     {            
-        logger.Info("selected plan='{Plan}', hostname='{Host}', mode='{Mode}'", opts.Plan, opts.Domain ?? "(none)", opts.Mode);
-
         var args = new List<string>();
 
         var plan = opts.Plan?.Trim().ToLowerInvariant();
@@ -18,7 +15,6 @@ internal sealed class NgrokArgumentBuilder
         switch ((plan, mode))
         {
             case ("hobbyist", "http"):
-                logger.Info("binding reserved hostname for hobbyist/http mode: {Hostname}", opts.Hostname);
                 args.Add("http");
                 args.Add($"http://{opts.TargetHostname}:{opts.TargetHostnamePort}");
                 args.Add($"--hostname={opts.Hostname}");
@@ -27,7 +23,6 @@ internal sealed class NgrokArgumentBuilder
                 break;
 
             default:
-                logger.Warn("unknown mode '{Mode}', falling back to http", opts.Mode);
                 args.Add("http");
                 args.Add($"http://{opts.TargetHostname}:{opts.TargetHostnamePort}");
                 args.Add("--log=stdout");
