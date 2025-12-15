@@ -75,7 +75,7 @@ public class NgrokReadinessExtensionsTests
 
         var client = new TestInspectionApiClient((u, ct) => Task.FromResult(ResponseFactory(u, ct)));
 
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
+        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
         var u = await resource.Uri;
         Assert.Equal(new Uri("https://probe.ngrok.io"), u);
@@ -100,7 +100,7 @@ public class NgrokReadinessExtensionsTests
 
         var client = new TestInspectionApiClient((u, ct) => Task.FromResult(ResponseFactory(u, ct)));
 
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
+        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
         Assert.False(resource.Uri.IsCompleted);
     }
@@ -135,7 +135,7 @@ public class NgrokReadinessExtensionsTests
 
         var client = new TestInspectionApiClient(Handler);
 
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
+        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
         var u3 = await resource.Uri;
         Assert.Equal(new Uri("https://second.ngrok.io"), u3);
@@ -160,7 +160,7 @@ public class NgrokReadinessExtensionsTests
 
         var client = new TestInspectionApiClient((u, ct) => Task.FromResult(ResponseFactory(u, ct)));
 
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, logger: NullLogger.Instance, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
+        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
         Assert.False(resource.Uri.IsCompleted);
     }

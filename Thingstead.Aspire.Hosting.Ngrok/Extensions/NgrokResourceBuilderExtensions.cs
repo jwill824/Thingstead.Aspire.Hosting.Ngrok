@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 // Put extensions in the Aspire.Hosting namespace to ease discovery as referencing
 // the Aspire hosting package automatically adds this namespace.
 namespace Aspire.Hosting;
@@ -21,16 +20,13 @@ public static class NgrokResourceBuilderExtensions
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="options">Ngrok Options.</param>
     /// <param name="authToken">Parameter resource that provides the ngrok auth token.</param>
-    /// <param name="logger">Optional logger delegate.</param>
     public static IResourceBuilder<NgrokResource> AddNgrok(
         this IDistributedApplicationBuilder builder,
         NgrokOptions options,
-        IResourceBuilder<ParameterResource> authToken,
-        ILogger? logger = null)
+        IResourceBuilder<ParameterResource> authToken)
     {
         ArgumentNullException.ThrowIfNull(builder);
         var resource = new NgrokResource(options.ResourceName, authToken?.Resource ?? throw new ArgumentNullException(nameof(authToken)));
-        // create the resource builder
         var ngrokBuilder = builder!.AddResource(resource)
             .WithImage(NgrokContainerImageTags.Image)
             .WithImageRegistry(NgrokContainerImageTags.Registry)
@@ -43,34 +39,61 @@ public static class NgrokResourceBuilderExtensions
 
         if (string.Equals(options.Mode, "http", StringComparison.OrdinalIgnoreCase) && string.Equals(options.Plan, "free", StringComparison.OrdinalIgnoreCase))
         {
-            logger.Info("http/free mode with no reserved hostname detected — waiting for generated public URL via inspection API");
-            ngrokBuilder = ngrokBuilder.WaitForGeneratedPublicUrl(logger: logger);
-        }
-        else
-        {
-            logger.Info("skipping inspection wait — mode={Mode}, hostnameProvided={HasHostname}", options.Mode, !string.IsNullOrWhiteSpace(options.Hostname));
+            ngrokBuilder = ngrokBuilder.WaitForGeneratedPublicUrl();
         }
 
-        var args = NgrokArgumentBuilder.BuildArgs(options, logger);
+        var args = NgrokArgumentBuilder.BuildArgs(options);
         ngrokBuilder = ngrokBuilder.WithArgs(args);
 
         if (!string.IsNullOrWhiteSpace(options.Domain))
         {
             try
             {
-                var scheme = string.Equals(options.Mode, "tls", StringComparison.OrdinalIgnoreCase) ? "https" : "http";
-                var publicUrl = new Uri($"{scheme}://{options.Hostname}");
-                resource.CompletePublicUrl(publicUrl);
-                logger.Info("populated public Uri from reserved hostname: {Url}", publicUrl);
+                var publicUrl = BuildPublicUrlFromOptions(options);
+                if (publicUrl is not null)
+                {
+                    resource.CompletePublicUrl(publicUrl);
+                }
             }
-            catch (Exception ex)
+            catch
             {
-                logger.Error(ex, "failed to populate public Uri from configured hostname");
+                // best-effort: ignore failures when computing a public URL from options
             }
         }
 
         return ngrokBuilder;
     }
+
+    internal static Uri? BuildPublicUrlFromOptions(NgrokOptions options)
+    {
+        if (options is null || string.IsNullOrWhiteSpace(options.Domain)) return null;
+
+        Uri? parsedDomain = null;
+        if (Uri.TryCreate(options.Domain, UriKind.Absolute, out var pd) && !string.IsNullOrEmpty(pd.Scheme))
+        {
+            parsedDomain = pd;
+        }
+
+        string scheme;
+        if (parsedDomain is not null)
+        {
+            scheme = parsedDomain.Scheme;
+        }
+        else if (!string.IsNullOrWhiteSpace(options.Mode))
+        {
+            scheme = string.Equals(options.Mode, "tls", StringComparison.OrdinalIgnoreCase) ? "https" : "http";
+        }
+        else
+        {
+            scheme = "https";
+        }
+
+        var host = !string.IsNullOrWhiteSpace(options.Hostname)
+            ? options.Hostname
+            : parsedDomain?.Host ?? options.Domain;
+
+        return new Uri($"{scheme}://{host}");
+    }    
 }
 
 // This class just contains constant strings that can be updated periodically

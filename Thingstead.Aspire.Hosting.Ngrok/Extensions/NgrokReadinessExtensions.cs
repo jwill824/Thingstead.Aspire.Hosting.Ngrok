@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 
 namespace Aspire.Hosting;
 
@@ -30,53 +29,44 @@ internal static class NgrokReadinessExtensions
     internal static async Task<string?> QueryInspectionApiOnceAsync(
         List<Uri> candidates,
         IHttpClientWrapper client,
-        ILogger? logger,
         CancellationToken cancellationToken)
     {
         HttpResponseMessage? res = null;
-        string triedHost = null!;
         foreach (var tu in candidates)
         {
             try
             {
-                triedHost = tu.Host;
-                logger.Info("querying inspection API at {Uri}", tu);
+                string triedHost = tu.Host;
                 res = await client.GetAsync(tu, cancellationToken);
                 if (res.IsSuccessStatusCode) break;
             }
-            catch (HttpRequestException hre)
+            catch (HttpRequestException)
             {
-                logger?.Warn(hre, "request to {Uri} failed", tu);
                 continue;
             }
         }
 
         if (res == null)
         {
-            logger.Warn("no successful inspection API response from any candidate hosts");
             return null;
         }
 
         if (!res.IsSuccessStatusCode)
         {
-            logger.Warn("inspection API returned status {Status} from host {Host}", res.StatusCode, triedHost);
+            // inspection API returned non-success status; ignore and continue
         }
 
         var content = await res.Content.ReadAsStringAsync(cancellationToken);
         if (string.IsNullOrEmpty(content))
         {
-            logger.Warn("inspection API returned empty body");
             return null;
         }
-
-        logger.Info("inspection API response length={Length}", content.Length);
         try
         {
             return TryExtractFirstPublicUrlFromInspectionJson(content);
         }
-        catch (JsonException je)
+        catch (JsonException)
         {
-            logger?.Error(je, "failed to parse inspection response as JSON");
             return null;
         }
     }
@@ -85,7 +75,6 @@ internal static class NgrokReadinessExtensions
         NgrokResource resource,
         List<Uri> tunnelsUriCandidates,
         int pollTimeoutSeconds = 60,
-        ILogger? logger = null,
         IHttpClientWrapper? client = null,
         int initialDelayMs = 5000,
         CancellationToken cancellationToken = default)
@@ -102,16 +91,15 @@ internal static class NgrokReadinessExtensions
             {
                 try
                 {
-                    var extracted = await QueryInspectionApiOnceAsync(tunnelsUriCandidates, client, logger, cancellationToken);
+                    var extracted = await QueryInspectionApiOnceAsync(tunnelsUriCandidates, client, cancellationToken);
                     if (!string.IsNullOrEmpty(extracted))
                     {
-                        logger.Info("found tunnel public_url={Url}", extracted);
                         try { resource.CompletePublicUrl(new Uri(extracted)); }
-                        catch (Exception ex) { logger.Error(ex, "failed to complete public url"); }
+                        catch { /* swallow */ }
                     }
                 }
                 catch (OperationCanceledException) { break; }
-                catch (Exception ex) { logger.Error(ex, "inspection query error"); }
+                catch { /* swallow errors */ }
 
                 if (resource.Uri.IsCompletedSuccessfully && !string.IsNullOrEmpty(resource.Uri.Result?.Host)) break;
                 await Task.Delay(1000, cancellationToken);
@@ -120,7 +108,7 @@ internal static class NgrokReadinessExtensions
         catch { /* swallow errors - best effort */ }
     }
 
-    public static IResourceBuilder<NgrokResource> WaitForGeneratedPublicUrl(this IResourceBuilder<NgrokResource> builder, int pollTimeoutSeconds = 60, ILogger? logger = null)
+    public static IResourceBuilder<NgrokResource> WaitForGeneratedPublicUrl(this IResourceBuilder<NgrokResource> builder, int pollTimeoutSeconds = 60)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -132,7 +120,7 @@ internal static class NgrokReadinessExtensions
                 var hostsToTry = new[] { apiEndpoint.Host };
                 var tunnelsUriCandidates = hostsToTry.Select(h => new Uri($"http://{h}:{apiEndpoint.Port}/api/tunnels")).ToList();
 
-                await ProbeInspectionApiCandidatesAsync(r, tunnelsUriCandidates, pollTimeoutSeconds, logger, null, cancellationToken: c);
+                await ProbeInspectionApiCandidatesAsync(r, tunnelsUriCandidates, pollTimeoutSeconds, client: null, cancellationToken: c);
             }
             catch { /* swallow errors */ }
         });
