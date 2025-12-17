@@ -9,24 +9,18 @@ internal sealed class NgrokArgumentBuilder
     {            
         var args = new List<string>();
 
-        var plan = opts.Plan?.Trim().ToLowerInvariant();
-        var mode = opts.Mode?.Trim().ToLowerInvariant();
-
-        switch ((plan, mode))
+        switch ((opts.Plan, opts.Mode))
         {
-            case ("hobbyist", "http"):
+            case (NgrokPlan.Free, NgrokMode.Http):
+            case (NgrokPlan.Hobbyist, NgrokMode.Http):
                 args.Add("http");
                 args.Add($"http://{opts.TargetHostname}:{opts.TargetHostnamePort}");
-                args.Add($"--hostname={opts.Hostname}");
                 args.Add("--log=stdout");
                 args.Add("--log-level=debug");
                 break;
 
             default:
-                args.Add("http");
-                args.Add($"http://{opts.TargetHostname}:{opts.TargetHostnamePort}");
-                args.Add("--log=stdout");
-                break;
+                throw new NotImplementedException($"Ngrok plan '{opts.Plan}' with mode '{opts.Mode}' is not supported.");
         }
 
         return [.. args];

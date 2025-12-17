@@ -26,54 +26,9 @@ internal static class NgrokReadinessExtensions
         return null;
     }
 
-    internal static async Task<string?> QueryInspectionApiOnceAsync(
-        List<Uri> candidates,
-        IHttpClientWrapper client,
-        CancellationToken cancellationToken)
-    {
-        HttpResponseMessage? res = null;
-        foreach (var tu in candidates)
-        {
-            try
-            {
-                string triedHost = tu.Host;
-                res = await client.GetAsync(tu, cancellationToken);
-                if (res.IsSuccessStatusCode) break;
-            }
-            catch (HttpRequestException)
-            {
-                continue;
-            }
-        }
-
-        if (res == null)
-        {
-            return null;
-        }
-
-        if (!res.IsSuccessStatusCode)
-        {
-            // inspection API returned non-success status; ignore and continue
-        }
-
-        var content = await res.Content.ReadAsStringAsync(cancellationToken);
-        if (string.IsNullOrEmpty(content))
-        {
-            return null;
-        }
-        try
-        {
-            return TryExtractFirstPublicUrlFromInspectionJson(content);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-    }
-
-    internal static async Task ProbeInspectionApiCandidatesAsync(
+    internal static async Task GetGeneratedPublicUrlAsync(
         NgrokResource resource,
-        List<Uri> tunnelsUriCandidates,
+        Uri tunnelUri,
         int pollTimeoutSeconds = 60,
         IHttpClientWrapper? client = null,
         int initialDelayMs = 5000,
@@ -91,7 +46,9 @@ internal static class NgrokReadinessExtensions
             {
                 try
                 {
-                    var extracted = await QueryInspectionApiOnceAsync(tunnelsUriCandidates, client, cancellationToken);
+                    var res = await client.GetAsync(tunnelUri, cancellationToken);
+                    var content = await res.Content.ReadAsStringAsync(cancellationToken);
+                    var extracted = TryExtractFirstPublicUrlFromInspectionJson(content);
                     if (!string.IsNullOrEmpty(extracted))
                     {
                         try { resource.CompletePublicUrl(new Uri(extracted)); }
@@ -117,10 +74,8 @@ internal static class NgrokReadinessExtensions
             try
             {
                 var apiEndpoint = builder.GetEndpoint("http");
-                var hostsToTry = new[] { apiEndpoint.Host };
-                var tunnelsUriCandidates = hostsToTry.Select(h => new Uri($"http://{h}:{apiEndpoint.Port}/api/tunnels")).ToList();
-
-                await ProbeInspectionApiCandidatesAsync(r, tunnelsUriCandidates, pollTimeoutSeconds, client: null, cancellationToken: c);
+                var tunnelUri = new Uri($"http://{apiEndpoint.Host}:{apiEndpoint.Port}/api/tunnels");
+                await GetGeneratedPublicUrlAsync(r, tunnelUri, pollTimeoutSeconds, client: null, cancellationToken: c);
             }
             catch { /* swallow errors */ }
         });

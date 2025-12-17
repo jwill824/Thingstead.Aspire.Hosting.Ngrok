@@ -17,12 +17,12 @@ public class NgrokOptions
     /// <summary>
     /// The ngrok plan (for example "hobbyist").
     /// </summary>
-    public string Plan { get; set; } = string.Empty;
+    public NgrokPlan Plan { get; set; } = NgrokPlan.Free;
 
     /// <summary>
     /// Mode (http/tcp etc.).
     /// </summary>
-    public string Mode { get; set; } = string.Empty;
+    public NgrokMode Mode { get; set; } = NgrokMode.Http;
 
     /// <summary>
     /// Optional domain or public url configured for ngrok.

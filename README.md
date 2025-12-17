@@ -53,27 +53,6 @@ Notes:
 - For the free/http plan without a reserved hostname, the host-side harness will poll the ngrok inspection API and the resource's published Uri will be populated once a tunnel `public_url` is discovered.
 - The auth token parameter you pass is wired into the container environment by `AddNgrok` (it sets `NGROK_AUTHTOKEN` internally) so consumers generally do not need to set it manually.
 
-### Logger parameter
-
-`AddNgrok` accepts an optional `ILogger? logger` parameter. This logger is used by the extension to
-emit lifecycle and troubleshooting messages (for example, when waiting for the inspection API or when
-populating the Uri from a configured hostname). Typical usage patterns:
-
-- During tests or when you don't want logging, pass `NullLogger.Instance`.
-- In real applications you can obtain an `ILogger` from DI or an `ILoggerFactory` and pass it in. For
-  example:
-
-```csharp
-using Microsoft.Extensions.Logging;
-
-var logger = host.Services.GetRequiredService<ILogger<Program>>();
-builder.AddNgrok("ngrok", ngrokOptions, authToken: ngrokAuthParam, logger: logger);
-```
-
-The extension logs structured messages using the provided `ILogger` (message templates and levels
-are chosen to help diagnose startup/inspection issues). If you use a logging provider that captures
-scopes or structured fields (for example Serilog), those fields will be included in the output.
-
 > [!NOTE]
 > The resource will set the configured ngrok auth token into the container environment. Provide the token via a secret `ParameterResource` created with `AddParameter(..., secret: true)`.
 
