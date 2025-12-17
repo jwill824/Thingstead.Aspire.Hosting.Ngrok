@@ -81,3 +81,41 @@ public class NgrokOptions
     /// </summary>
     public int TargetHostnamePort {get; set;} = 8081;
 }
+
+/// <summary>
+/// Ngrok <seealso href="https://ngrok.com/docs/pricing-limits">plans</seealso> supported by the Ngrok hosting resource.
+/// </summary>
+public enum NgrokPlan
+{
+    /// <summary>
+    /// Free plan.
+    /// </summary>
+    Free,
+    /// <summary>
+    /// Hobbyist plan.
+    /// </summary>
+    Hobbyist,
+    /// <summary>
+    /// Pay-as-you-go plan.
+    /// </summary>
+    PayAsYouGo
+}
+
+/// <summary>
+/// Ngrok <seealso href="https://ngrok.com/docs/universal-gateway/protocols">modes</seealso> supported by the Ngrok hosting resource.
+/// </summary>
+public enum NgrokMode
+{
+    /// <summary>
+    /// See <seealso href="https://ngrok.com/docs/universal-gateway/http">HTTP mode</seealso>.
+    /// </summary>
+    Http,
+    /// <summary>
+    /// See <seealso href="https://ngrok.com/docs/universal-gateway/tcp">TCP mode</seealso>.
+    /// </summary>
+    Tcp,
+    /// <summary>
+    /// See <seealso href="https://ngrok.com/docs/universal-gateway/tls">TLS mode</seealso>.
+    /// </summary>
+    Tls
+}
