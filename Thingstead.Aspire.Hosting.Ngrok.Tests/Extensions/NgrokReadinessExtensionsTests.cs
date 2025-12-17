@@ -1,10 +1,8 @@
 using Aspire.Hosting.ApplicationModel;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Thingstead.Aspire.Hosting.Ngrok.Tests.Extensions;
 
@@ -55,12 +53,10 @@ public class NgrokReadinessExtensionsTests
     }
 
     [Fact]
-    public async Task ProbeInspectionApiCandidatesAsync_sets_generated_public_url_when_inspection_returns_tunnel()
+    public async Task GetGeneratedPublicUrlAsync_sets_generated_public_url_when_inspection_returns_tunnel()
     {
         var param = new ParameterResource("auth", _ => "token", true);
         var resource = new NgrokResource("ngrok", param);
-
-        var candidates = new List<Uri> { new("http://localhost:4041/api/tunnels") };
 
         // create fake http response with a simple tunnels array
         var json = "{ \"tunnels\": [ { \"name\": \"t1\", \"public_url\": \"https://probe.ngrok.io\" } ] }";
@@ -75,21 +71,19 @@ public class NgrokReadinessExtensionsTests
 
         var client = new TestInspectionApiClient((u, ct) => Task.FromResult(ResponseFactory(u, ct)));
 
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
+        await NgrokReadinessExtensions.GetGeneratedPublicUrlAsync(resource, new("http://localhost:4041/api/tunnels"), pollTimeoutSeconds: 2, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
         var u = await resource.Uri;
         Assert.Equal(new Uri("https://probe.ngrok.io"), u);
     }
 
     [Fact]
-    public async Task ProbeInspectionApiCandidatesAsync_does_not_set_public_url_on_empty_body()
+    public async Task GetGeneratedPublicUrlAsync_does_not_set_public_url_on_empty_body()
     {
         var param = new ParameterResource("auth", _ => "token", true);
         var resource = new NgrokResource("ngrok", param);
 
-        var candidates = new List<Uri> { new("http://localhost:4041/api/tunnels") };
-
-        HttpResponseMessage ResponseFactory(Uri u, CancellationToken ct)
+        static HttpResponseMessage ResponseFactory(Uri u, CancellationToken ct)
         {
             var resp = new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -100,54 +94,16 @@ public class NgrokReadinessExtensionsTests
 
         var client = new TestInspectionApiClient((u, ct) => Task.FromResult(ResponseFactory(u, ct)));
 
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
+        await NgrokReadinessExtensions.GetGeneratedPublicUrlAsync(resource, new("http://localhost:4041/api/tunnels"), pollTimeoutSeconds: 1, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
         Assert.False(resource.Uri.IsCompleted);
     }
 
     [Fact]
-    public async Task ProbeInspectionApiCandidatesAsync_skips_failed_candidate_and_uses_next()
+    public async Task GetGeneratedPublicUrlAsync_does_not_set_public_url_on_invalid_json()
     {
         var param = new ParameterResource("auth", _ => "token", true);
         var resource = new NgrokResource("ngrok", param);
-
-        var candidates = new List<Uri>
-        {
-            new("http://first:4041/api/tunnels"),
-            new("http://second:4041/api/tunnels")
-        };
-
-        var json = "{ \"tunnels\": [ { \"name\": \"t1\", \"public_url\": \"https://second.ngrok.io\" } ] }";
-
-        Task<HttpResponseMessage> Handler(Uri u, CancellationToken ct)
-        {
-            if (u.Host.Equals("first", StringComparison.OrdinalIgnoreCase))
-            {
-                return Task.FromException<HttpResponseMessage>(new HttpRequestException("connect failed"));
-            }
-
-            var resp = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json)
-            };
-            return Task.FromResult(resp);
-        }
-
-        var client = new TestInspectionApiClient(Handler);
-
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 2, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
-
-        var u3 = await resource.Uri;
-        Assert.Equal(new Uri("https://second.ngrok.io"), u3);
-    }
-
-    [Fact]
-    public async Task ProbeInspectionApiCandidatesAsync_does_not_set_public_url_on_invalid_json()
-    {
-        var param = new ParameterResource("auth", _ => "token", true);
-        var resource = new NgrokResource("ngrok", param);
-
-        var candidates = new List<Uri> { new("http://localhost:4041/api/tunnels") };
 
         static HttpResponseMessage ResponseFactory(Uri u, CancellationToken ct)
         {
@@ -160,7 +116,7 @@ public class NgrokReadinessExtensionsTests
 
         var client = new TestInspectionApiClient((u, ct) => Task.FromResult(ResponseFactory(u, ct)));
 
-        await NgrokReadinessExtensions.ProbeInspectionApiCandidatesAsync(resource, candidates, pollTimeoutSeconds: 1, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
+        await NgrokReadinessExtensions.GetGeneratedPublicUrlAsync(resource, new("http://localhost:4041/api/tunnels"), pollTimeoutSeconds: 1, client: client, cancellationToken: CancellationToken.None, initialDelayMs: 0);
 
         Assert.False(resource.Uri.IsCompleted);
     }

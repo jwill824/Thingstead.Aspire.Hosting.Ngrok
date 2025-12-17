@@ -37,7 +37,7 @@ public static class NgrokResourceBuilderExtensions
                 context.EnvironmentVariables[NGROK_AUTHTOKEN] = resource.AuthTokenParameter;
             });
 
-        if (string.Equals(options.Mode, "http", StringComparison.OrdinalIgnoreCase) && string.Equals(options.Plan, "free", StringComparison.OrdinalIgnoreCase))
+        if (options.Mode == NgrokMode.Http && options.Plan == NgrokPlan.Free)
         {
             ngrokBuilder = ngrokBuilder.WaitForGeneratedPublicUrl();
         }
@@ -47,53 +47,49 @@ public static class NgrokResourceBuilderExtensions
 
         if (!string.IsNullOrWhiteSpace(options.Domain))
         {
-            try
-            {
-                var publicUrl = BuildPublicUrlFromOptions(options);
-                if (publicUrl is not null)
-                {
-                    resource.CompletePublicUrl(publicUrl);
-                }
-            }
-            catch
-            {
-                // best-effort: ignore failures when computing a public URL from options
-            }
+            resource.CompletePublicUrl(new Uri(options.Domain));
         }
 
         return ngrokBuilder;
     }
+}
 
-    internal static Uri? BuildPublicUrlFromOptions(NgrokOptions options)
-    {
-        if (options is null || string.IsNullOrWhiteSpace(options.Domain)) return null;
+/// <summary>
+/// Ngrok <seealso href="https://ngrok.com/docs/pricing-limits">plans</seealso> supported by the Ngrok hosting resource.
+/// </summary>
+public enum NgrokPlan
+{
+    /// <summary>
+    /// Free plan.
+    /// </summary>
+    Free,
+    /// <summary>
+    /// Hobbyist plan.
+    /// </summary>
+    Hobbyist,
+    /// <summary>
+    /// Pay-as-you-go plan.
+    /// </summary>
+    PayAsYouGo
+}
 
-        Uri? parsedDomain = null;
-        if (Uri.TryCreate(options.Domain, UriKind.Absolute, out var pd) && !string.IsNullOrEmpty(pd.Scheme))
-        {
-            parsedDomain = pd;
-        }
-
-        string scheme;
-        if (parsedDomain is not null)
-        {
-            scheme = parsedDomain.Scheme;
-        }
-        else if (!string.IsNullOrWhiteSpace(options.Mode))
-        {
-            scheme = string.Equals(options.Mode, "tls", StringComparison.OrdinalIgnoreCase) ? "https" : "http";
-        }
-        else
-        {
-            scheme = "https";
-        }
-
-        var host = !string.IsNullOrWhiteSpace(options.Hostname)
-            ? options.Hostname
-            : parsedDomain?.Host ?? options.Domain;
-
-        return new Uri($"{scheme}://{host}");
-    }    
+/// <summary>
+/// Ngrok <seealso href="https://ngrok.com/docs/universal-gateway/protocols">modes</seealso> supported by the Ngrok hosting resource.
+/// </summary>
+public enum NgrokMode
+{
+    /// <summary>
+    /// See <seealso href="https://ngrok.com/docs/universal-gateway/http">HTTP mode</seealso>.
+    /// </summary>
+    Http,
+    /// <summary>
+    /// See <seealso href="https://ngrok.com/docs/universal-gateway/tcp">TCP mode</seealso>.
+    /// </summary>
+    Tcp,
+    /// <summary>
+    /// See <seealso href="https://ngrok.com/docs/universal-gateway/tls">TLS mode</seealso>.
+    /// </summary>
+    Tls
 }
 
 // This class just contains constant strings that can be updated periodically
