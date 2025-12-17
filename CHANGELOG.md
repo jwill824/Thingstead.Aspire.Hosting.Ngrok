@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v2.0.3...v2.0.4) (2025-12-17)
+
+
+### Bug Fixes
+
+* moving enums ([2078e4f](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/2078e4faa8283fad1ce9faccef42e018702f2051))
+
 ## [2.0.3](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v2.0.2...v2.0.3) (2025-12-17)
 
 
