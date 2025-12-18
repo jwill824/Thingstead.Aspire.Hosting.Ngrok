@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v2.0.4...v2.0.5) (2025-12-18)
+
+
+### Bug Fixes
+
+* changing NgrokOptions to record ([769913c](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/commit/769913c93bff73a0aed0a33088c76f40460e493e))
+
 ## [2.0.4](https://github.com/jwill824/Thingstead.Aspire.Hosting.Ngrok/compare/v2.0.3...v2.0.4) (2025-12-17)
 
 
