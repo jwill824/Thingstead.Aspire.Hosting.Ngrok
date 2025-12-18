@@ -4,7 +4,7 @@ namespace Aspire.Hosting;
 /// Maps to the "Ngrok" section in appsettings. This is a simple POCO intended
 /// for application-level configuration binding.
 /// </summary>
-public class NgrokOptions
+public record NgrokOptions
 {
     private string _domain = string.Empty;
     private string _hostname = string.Empty;
